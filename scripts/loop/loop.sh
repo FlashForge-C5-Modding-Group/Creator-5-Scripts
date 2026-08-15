@@ -1,5 +1,22 @@
 #!/bin/sh
 set -e
 set -u
-# Moonraker and Mainsail execution is default, use for adding new scripts!
-/usr/prog/tweak/scripts/scripts/enable-msmr.sh &
+
+TARGET_DIR="/usr/prog/scripts/scripts/scripts"
+
+# Verify the target directory exists
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Directory $TARGET_DIR does not exist." >&2
+    exit 1
+fi
+
+# Scan and execute each .sh
+for script in "$TARGET_DIR"/*.sh; do
+    if [ -f "$script" ]; then
+        if [ -x "$script" ]; then
+            "$script" &
+        else
+            sh "$script" &
+        fi
+    fi
+done
