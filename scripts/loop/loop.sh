@@ -2,7 +2,7 @@
 set -e
 set -u
 
-TARGET_DIR="/usr/prog/scripts/scripts/scripts"
+TARGET_DIR="/usr/prog/scripts/scripts"
 
 # Verify the target directory exists
 if [ ! -d "$TARGET_DIR" ]; then
