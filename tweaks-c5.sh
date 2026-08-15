@@ -24,6 +24,7 @@ show_menu() {
 
 enable_loop() {
     clear
+    echo "[*] Enabling loop script"
     TARGET_FILE="/usr/prog/app_startup.sh"
     MATCH_LINE="/usr/prog/bin/sys_start.sh &"
     NEW_LINE="/usr/prog/scripts/loop/loop.sh &"
@@ -31,6 +32,10 @@ enable_loop() {
     # Ensure the target file exists
     if [ ! -f "$TARGET_FILE" ]; then
         echo "Error: $TARGET_FILE does not exist." >&2
+        printf "Press Enter to return to the main menu..."
+        stty -echo
+        read -r _
+        stty echo
         return 0
     fi
 
@@ -52,6 +57,16 @@ enable_loop() {
     else
         echo "Line already exists in $TARGET_FILE, skipping."
     fi
+    mkdir "/usr/prog/scripts/loop/"
+    mkdir "/usr/prog/scripts/scripts/"
+    echo "[+] Created folders required"
+    cp -np scripts/loop/loop.sh /usr/prog/scripts/loop/loop.sh
+    echo "[+] Copied loop script."
+    cp -np scripts/scripts/enable-msmr.sh /usr/prog/scripts/scripts/enable-msmr.sh
+    echo "[*] Setting permissions..."
+    chmod +xwr /usr/prog/scripts/loop/loop.sh
+    chmod +xwr /usr/prog/scripts/scripts/enable-msmr.sh
+    echo "[*] All done!"
     printf "Press Enter to return to the main menu..."
     stty -echo
     read -r _
