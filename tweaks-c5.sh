@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="2.0.0EX"
+VERSION="2.0.0"
 
 show_menu() {
     clear
