@@ -26,7 +26,7 @@ enable_loop() {
     clear
     echo "[*] Enabling loop script"
     TARGET_FILE="/usr/prog/app_startup.sh"
-    MATCH_LINE="/usr/prog/bin/sys_start.sh &"
+    MATCH_LINE="/usr/prog/PROGRAM/software/firmwareExe &"
     NEW_LINE="/usr/prog/scripts/loop/loop.sh &"
 
     # Ensure the target file exists
