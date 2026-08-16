@@ -10,3 +10,4 @@
         sleep 2
     done
 )
+return 1

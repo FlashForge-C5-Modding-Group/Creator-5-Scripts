@@ -1,6 +1,10 @@
 # Creator-5-Scripts
 Scripts for C5, including important ones that loop!
 
+## The "scripts" folder
+A folder containing scripts for loop, the safer method to fix bricking of printers by making it not possible to break the startup shell script.
+
+
 # How to run scripts
 Running scripts are quite easy.
 
