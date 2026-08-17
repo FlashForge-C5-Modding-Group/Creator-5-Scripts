@@ -15,7 +15,8 @@ show_menu() {
     echo "3) Add Entware (DO NOT RUN)"
     echo "4) Update Mainsail (DO NOT RUN)"
     echo "5) Update Moonraker (INDEV)"
-    echo "6) Exit"
+    echo "6) Optimize Nginx (1 Worker / 2 Instances)"
+    echo "7) Exit"
     echo ""
     echo "98) Credits"
     echo "99) Release Notes"
@@ -365,6 +366,66 @@ update_moonraker () {
     read -r _
 }
 
+set_nginx_two_instances() {
+    clear
+    echo "[*] Checking for Nginx configuration file..."
+
+    # Determine Nginx config path
+    NGINX_CONF=""
+    if [ -f "/usr/prog/nginx/conf/nginx.conf" ]; then
+        NGINX_CONF="/usr/prog/nginx/conf/nginx.conf"
+    elif [ -f "/usr/data/nginx/conf/nginx.conf" ]; then
+        NGINX_CONF="/usr/data/nginx/conf/nginx.conf"
+    fi
+
+    if [ -z "$NGINX_CONF" ]; then
+        echo "[-] Error: Could not locate nginx.conf in /usr/prog/nginx/conf/ or /usr/data/nginx/conf/!"
+        printf "Press Enter to return..."
+        read -r _
+        return 1
+    fi
+
+    echo "[+] Found Nginx config at: $NGINX_CONF"
+
+    # 1. Check if worker_processes 1 is already set
+    if grep -E "^[[:space:]]*worker_processes[[:space:]]+1;" "$NGINX_CONF" >/dev/null 2>&1; then
+        echo "[!] Nginx is ALREADY configured for 1 worker process (2 instances total)."
+        echo "[!] No changes needed."
+        printf "Press Enter to return..."
+        read -r _
+        return 0
+    fi
+
+    # 2. Check if worker_processes exists at all with any other value
+    if grep -E "^[[:space:]]*worker_processes[[:space:]]+" "$NGINX_CONF" >/dev/null 2>&1; then
+        echo "[*] Modifying existing worker_processes directive to 1 in $NGINX_CONF..."
+        sed -i -E 's/^[[:space:]]*worker_processes[[:space:]]+[^;]+;/worker_processes 1;/' "$NGINX_CONF"
+    else
+        echo "[*] worker_processes directive not found. Adding 'worker_processes 1;' to top of $NGINX_CONF..."
+        # Inserisce la riga subito all'inizio del file
+        sed -i '1i worker_processes 1;' "$NGINX_CONF"
+    fi
+
+    # 3. Verify modification
+    if grep -E "^[[:space:]]*worker_processes[[:space:]]+1;" "$NGINX_CONF" >/dev/null 2>&1; then
+        echo "[+] Successfully updated $NGINX_CONF!"
+        echo "[*] Reloading Nginx configuration..."
+        
+        if killall -HUP nginx 2>/dev/null; then
+            echo "[+] Sent reload signal (SIGHUP) to Nginx."
+        elif [ -x "/usr/prog/nginx/sbin/nginx" ]; then
+            /usr/prog/nginx/sbin/nginx -p /usr/prog/nginx -c "$NGINX_CONF" -s reload 2>/dev/null
+            echo "[+] Nginx reload command executed."
+        else
+            echo "[!] Warning: Could not reload Nginx automatically. Please reboot or reload manually."
+        fi
+    else
+        echo "[-] Error: Failed to update worker_processes directive in $NGINX_CONF."
+    fi
+
+    printf "Press Enter to return..."
+    read -r _
+}
 credits () {
     echo "================================================================"
     echo "                          Credits for"
@@ -398,8 +459,10 @@ while true; do
             ;;
         5)
             update_moonraker
-            ;;
         6)
+            set_nginx_two_instances
+            ;;
+        7)
             echo "Exiting..."
             exit 0
             ;;
