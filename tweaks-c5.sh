@@ -1,26 +1,25 @@
 #!/bin/sh
 
-VERSION="2.0.0"
+VERSION="2.0.1"
 
 show_menu() {
     clear
     echo "==============================================="
-    echo "               Tweaks for FF C5                "
-    echo "Basic installs made by ano, script made by Cart"
-    echo "              discord.gg/7nJUB9dq4F            "
-    echo "                 Version $VERSION              "
+    echo "                Tweaks for FF C5"
+    echo "              discord.gg/7nJUB9dq4F"
+    echo "                 Version $VERSION"
     echo "==============================================="
     echo "1) Enable loop script & Mainsail"
-    echo "2) Enable Legacy NAN (DO NOT RUN)"
-    echo "3) Add Entware (DO NOT RUN)"
-    echo "4) Update Mainsail (DO NOT RUN)"
+    echo "2) Enable Legacy NAN [EXPERIMENTAL]"
+    echo "3) Add Entware [EXPERIMENTAL]"
+    echo "4) Update Mainsail"
     echo "5) Update Moonraker (INDEV)"
-    echo "6) Optimize Nginx (1 Worker / 2 Instances)"
+    echo "6) Optimize Nginx [EXPERIMENTAL]"
     echo "7) Exit"
     echo ""
     echo "98) Credits"
     echo "99) Release Notes"
-    echo "================================================"
+    echo "================================================ "
 }
 
 enable_loop() {
@@ -86,12 +85,14 @@ release_notes() {
 }
 
 release_noting(){
-    echo "========================================="
-    echo "              Release Notes"
-    echo "             Version $VERSION              "
+    echo "==================================================="
+    echo "                   Release Notes"
+    echo "                  Version $VERSION"
     echo ""
-    echo "       Major rewrite of the script      "
-    echo "=========================================="
+    echo "            Adds Optimization of NGINX"
+    echo "             New script is by pappicio"
+    echo "Updates the rest, any new scripts are EXPERIMENTAL"
+    echo "=================================================="
 }
 
 enable_nan_mips() {
@@ -156,27 +157,38 @@ enable_nan_mips() {
     echo "[*] Writing 1 to $OFFSET..."
     busybox devmem "$OFFSET" 8 1
 
-    # Insert persistent command at the top of app_startup.sh right after shebang
-    STARTUP_FILE="/usr/prog/app_startup.sh"
-    CMD_TO_ADD="busybox devmem $OFFSET 8 1"
-
-    if [ -f "$STARTUP_FILE" ]; then
-        if grep -q "$OFFSET" "$STARTUP_FILE"; then
-            echo "[+] Startup entry already exists in $STARTUP_FILE."
-        else
-            echo "[*] Adding patch entry to top of $STARTUP_FILE..."
-            # POSIX-compliant single-line sed insert after line 1
-            sed -i "1a $CMD_TO_ADD" "$STARTUP_FILE"
-            echo "[+] Successfully patched $STARTUP_FILE."
-        fi
-    else
-        echo "[-] Warning: $STARTUP_FILE not found. Live patch applied, but persistent startup entry was not added."
+    # Verify loop.sh exists before deploying script
+    LOOP_FILE="/usr/prog/scripts/loop/loop.sh"
+    if [ ! -f "$LOOP_FILE" ]; then
+        echo "[-] Error: $LOOP_FILE does not exist!"
+        printf "Press Enter to return..."
+        read -r _
+        return 1
     fi
+
+    # Deploy script from 2 directories up
+    SRC_FILE="scripts/scripts/nan-binary.sh"
+    DEST_DIR="/usr/prog/scripts/scripts"
+    DEST_FILE="$DEST_DIR/nan-binary.sh"
+
+    if [ ! -f "$SRC_FILE" ]; then
+        echo "[-] Error: Source file $SRC_FILE not found!"
+        printf "Press Enter to return..."
+        read -r _
+        return 1
+    fi
+
+    echo "[*] Deploying $SRC_FILE to $DEST_DIR..."
+    mkdir -p "$DEST_DIR"
+    cp "$SRC_FILE" "$DEST_FILE"
+    chmod +w "$DEST_FILE"
+    echo "[+] File successfully copied to $DEST_FILE and set to writable."
 
     echo "[+] Legacy NaN MIPS binaries enablement complete!"
     printf "Press Enter to return..."
     read -r _
 }
+
 
 install_entware() {
     clear
@@ -258,47 +270,41 @@ install_entware() {
     # Export PATH for current session immediately
     export PATH=/opt/bin:/opt/sbin:$PATH
 
-    # 4. Add mount and unslung startup script to app_startup.sh
-    STARTUP_FILE="/usr/prog/app_startup.sh"
-    TARGET_LINE="busybox devmem 0x00a130d1 8 1"
-
-    if [ -f "$STARTUP_FILE" ]; then
-        if grep -q "rc.unslung" "$STARTUP_FILE"; then
-            echo "[+] Entware startup entry already exists in $STARTUP_FILE."
-        elif grep -q "$TARGET_LINE" "$STARTUP_FILE"; then
-            echo "[*] Inserting Entware startup entry directly below '$TARGET_LINE'..."
-
-            # 1. Write the block to a temporary file
-            cat << 'EOF' > /tmp/entware_block.txt
-
-# entware
-mount --bind /usr/data/bin/opt /opt
-[ -x /opt/etc/init.d/rc.unslung ] && /opt/etc/init.d/rc.unslung start
-EOF
-
-            # 2. Insert the contents of the temp file right below TARGET_LINE
-            sed -i "/$TARGET_LINE/r /tmp/entware_block.txt" "$STARTUP_FILE"
-
-            # 3. Clean up temp file
-            rm -f /tmp/entware_block.txt
-
-            echo "[+] Inserted Entware startup entries into $STARTUP_FILE."
-        else
-            echo "[!] '$TARGET_LINE' not found. Appending Entware entry to end of file..."
-            cat << 'EOF' >> "$STARTUP_FILE"
-
-# entware
-mount --bind /usr/data/bin/opt /opt
-[ -x /opt/etc/init.d/rc.unslung ] && /opt/etc/init.d/rc.unslung start
-EOF
-            echo "[+] Appended Entware startup entries to $STARTUP_FILE."
-        fi
+    # 4. Verify loop.sh exists before deploying script
+    LOOP_FILE="/usr/prog/scripts/loop/loop.sh"
+    if [ ! -f "$LOOP_FILE" ]; then
+        echo "[-] Error: $LOOP_FILE does not exist!"
+        printf "Press Enter to return..."
+        read -r _
+        return 1
     fi
+
+    # Deploy entware script from 2 directories up
+    SRC_FILE="scripts/scripts/entware.sh"
+    DEST_DIR="/usr/prog/scripts/scripts"
+
+    if [ -f "$SRC_FILE" ]; then
+        DEST_FILE="$DEST_DIR/entware.sh"
+    elif [ -f "../../scripts/scripts/entware" ]; then
+        SRC_FILE="../../scripts/scripts/entware"
+        DEST_FILE="$DEST_DIR/entware"
+    else
+        echo "[-] Error: Source entware script not found in ../../scripts/scripts/!"
+        printf "Press Enter to return..."
+        read -r _
+        return 1
+    fi
+
+    echo "[*] Deploying $SRC_FILE to $DEST_DIR..."
+    mkdir -p "$DEST_DIR"
+    cp "$SRC_FILE" "$DEST_FILE"
+    chmod +w "$DEST_FILE"
+    echo "[+] File successfully copied to $DEST_FILE and set to writable."
 
     echo "[+] Running opkg update"
     opkg update
 
-    echo "[+] Adding aditional packages (Nano, Git)"
+    echo "[+] Adding additional packages (Nano, Git)"
     opkg install nano git
 
     echo "[+] Entware installation finished!"
@@ -368,70 +374,97 @@ update_moonraker () {
 
 set_nginx_two_instances() {
     clear
+    local nginx_conf="" nginx_bin=""
+    
+    local conf_paths=(
+        "/usr/prog/nginx/conf/nginx.conf"
+        "/usr/data/nginx/conf/nginx.conf"
+    )
+    
+    local bin_paths=(
+        "/usr/prog/nginx/sbin/nginx"
+        "/usr/data/nginx/sbin/nginx"
+        "$(command -v nginx 2>/dev/null)"
+    )
+
+    # 1. Determine Nginx config path
     echo "[*] Checking for Nginx configuration file..."
+    for path in "${conf_paths[@]}"; do
+        if [ -f "$path" ]; then
+            nginx_conf="$path"
+            break
+        fi
+    done
 
-    # Determine Nginx config path
-    NGINX_CONF=""
-    if [ -f "/usr/prog/nginx/conf/nginx.conf" ]; then
-        NGINX_CONF="/usr/prog/nginx/conf/nginx.conf"
-    elif [ -f "/usr/data/nginx/conf/nginx.conf" ]; then
-        NGINX_CONF="/usr/data/nginx/conf/nginx.conf"
-    fi
-
-    if [ -z "$NGINX_CONF" ]; then
-        echo "[-] Error: Could not locate nginx.conf in /usr/prog/nginx/conf/ or /usr/data/nginx/conf/!"
-        printf "Press Enter to return..."
-        read -r _
+    if [ -z "$nginx_conf" ]; then
+        echo "[-] Error: Could not locate nginx.conf in known directories."
+        read -rp "Press Enter to return..." _
         return 1
     fi
+    echo "[+] Found Nginx config at: $nginx_conf"
 
-    echo "[+] Found Nginx config at: $NGINX_CONF"
+    # 2. Determine Nginx binary path
+    for bin in "${bin_paths[@]}"; do
+        if [ -x "$bin" ]; then
+            nginx_bin="$bin"
+            break
+        fi
+    done
 
-    # 1. Check if worker_processes 1 is already set
-    if grep -E "^[[:space:]]*worker_processes[[:space:]]+1;" "$NGINX_CONF" >/dev/null 2>&1; then
-        echo "[!] Nginx is ALREADY configured for 1 worker process (2 instances total)."
+    # 3. Check if worker_processes 1 is already set
+    if grep -qE '^[[:space:]]*worker_processes[[:space:]]+1;' "$nginx_conf"; then
+        echo "[!] Nginx is ALREADY configured for 1 worker process."
         echo "[!] No changes needed."
-        printf "Press Enter to return..."
-        read -r _
+        read -rp "Press Enter to return..." _
         return 0
     fi
 
-    # 2. Check if worker_processes exists at all with any other value
-    if grep -E "^[[:space:]]*worker_processes[[:space:]]+" "$NGINX_CONF" >/dev/null 2>&1; then
-        echo "[*] Modifying existing worker_processes directive to 1 in $NGINX_CONF..."
-        sed -i -E 's/^[[:space:]]*worker_processes[[:space:]]+[^;]+;/worker_processes 1;/' "$NGINX_CONF"
+    # 4. Create a safety backup
+    cp "$nginx_conf" "${nginx_conf}.bak"
+    echo "[*] Backup created at ${nginx_conf}.bak"
+
+    # 5. Modify or insert worker_processes directive
+    if grep -qE '^[[:space:]]*worker_processes[[:space:]]+' "$nginx_conf"; then
+        echo "[*] Modifying existing worker_processes directive..."
+        sed -i -E 's/^[[:space:]]*worker_processes[[:space:]]+[^;]+;/worker_processes 1;/' "$nginx_conf"
     else
-        echo "[*] worker_processes directive not found. Adding 'worker_processes 1;' to top of $NGINX_CONF..."
-        # Inserisce la riga subito all'inizio del file
-        sed -i '1i worker_processes 1;' "$NGINX_CONF"
+        echo "[*] worker_processes directive not found. Adding to top of file..."
+        sed -i '1i worker_processes 1;' "$nginx_conf"
     fi
 
-    # 3. Verify modification
-    if grep -E "^[[:space:]]*worker_processes[[:space:]]+1;" "$NGINX_CONF" >/dev/null 2>&1; then
-        echo "[+] Successfully updated $NGINX_CONF!"
-        echo "[*] Reloading Nginx configuration..."
-        
-        if killall -HUP nginx 2>/dev/null; then
-            echo "[+] Sent reload signal (SIGHUP) to Nginx."
-        elif [ -x "/usr/prog/nginx/sbin/nginx" ]; then
-            /usr/prog/nginx/sbin/nginx -p /usr/prog/nginx -c "$NGINX_CONF" -s reload 2>/dev/null
-            echo "[+] Nginx reload command executed."
-        else
-            echo "[!] Warning: Could not reload Nginx automatically. Please reboot or reload manually."
+    # 6. Test syntax before reloading
+    if [ -n "$nginx_bin" ]; then
+        echo "[*] Validating Nginx configuration syntax..."
+        if ! "$nginx_bin" -t -c "$nginx_conf" >/dev/null 2>&1; then
+            echo "[-] Error: Nginx configuration test failed! Restoring original file..."
+            cp "${nginx_conf}.bak" "$nginx_conf"
+            read -rp "Press Enter to return..." _
+            return 1
         fi
-    else
-        echo "[-] Error: Failed to update worker_processes directive in $NGINX_CONF."
     fi
 
+    # 7. Reload Nginx
+    echo "[+] Successfully updated $nginx_conf!"
+    echo "[*] Reloading Nginx configuration..."
+
+    if [ -n "$nginx_bin" ] && "$nginx_bin" -s reload -c "$nginx_conf" 2>/dev/null; then
+        echo "[+] Reloaded Nginx via binary command."
+    elif killall -HUP nginx 2>/dev/null || pkill -HUP -f nginx 2>/dev/null; then
+        echo "[+] Sent reload signal (SIGHUP) to Nginx processes."
+    else
+        echo "[!] Warning: Could not reload Nginx automatically. Please reload manually."
+    fi
+	
     printf "Press Enter to return..."
     read -r _
 }
 credits () {
     echo "================================================================"
     echo "                          Credits for"
-    echo "                        Version $VERSION              "
+    echo "                        Version $VERSION"
     echo ""
-    echo "All scripts are made by Cart. Some AI assist, not written by AI."
+    echo "Some scripts are made by Cart. Some AI assist, not written by AI."
+    echo "Some scripts are now made by outside contributors, check repo!"
     echo " github/FlashForge-C5-Modding-Group/Creator-5-Written-Scripts "
     echo "================================================================"
     printf "Press Enter to return..."
