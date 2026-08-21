@@ -1,4 +1,5 @@
 #!/bin/sh
+export LD_LIBRARY_PATH="/usr/prog/Python-3.8.2/lib:${LD_LIBRARY_PATH:-}"
 
 (
     # Poll until available (60s should be more than long enough)
