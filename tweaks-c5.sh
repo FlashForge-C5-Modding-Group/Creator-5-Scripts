@@ -1,6 +1,6 @@
 #!/bin/sh
 STARUPFIX="/usr/prog/app_startup.sh"
-VERSION="2.0.3"
+VERSION="2.1.0"
 set -e
 set -u
 
@@ -12,16 +12,13 @@ show_menu() {
     echo "                Tweaks for FF C5"
     echo "              discord.gg/7nJUB9dq4F"
     echo "                  Version $VERSION"
-    echo "           If it shows any errors, CTRL+C!"
-    echo "      Currently use the wiki pages instead!"
-    echo "https://github.com/FlashForge-C5-Modding-Group/Creator-5-Mods"
     echo "==============================================="
-    #echo "1) Enable loop script & Mainsail [EXPERIMENTAL]"
-    #echo "2) Enable Legacy NAN [EXPERIMENTAL]"
-    #echo "3) Add Entware [EXPERIMENTAL]"
-    #echo "4) Update Mainsail [EXPERIMENTAL]"
-    #echo "5) Update Moonraker (INDEV)"
-    #echo "6) Optimize Nginx [EXPERIMENTAL]"
+    echo "1) Enable loop script & Mainsail [EXPERIMENTAL]"
+    echo "2) Enable Legacy NAN [EXPERIMENTAL]"
+    echo "3) Add Entware [EXPERIMENTAL]"
+    echo "4) Update Mainsail [EXPERIMENTAL]"
+    echo "5) Update Moonraker (INDEV)"
+    echo "6) Optimize Nginx [EXPERIMENTAL]"
     echo "7) Exit"
     echo ""
     echo "98) Credits"
@@ -102,7 +99,7 @@ release_noting(){
     echo "                    Release Notes"
     echo "                   Version $VERSION"
     echo ""
-    echo "         Hopefully fixes the script, new warning"
+    echo "PR from pappicio, and many fixes to prevent bricks"
     echo "=================================================="
 }
 
