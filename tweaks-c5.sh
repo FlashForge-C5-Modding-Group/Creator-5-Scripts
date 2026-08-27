@@ -4,6 +4,8 @@ VERSION="2.0.3"
 set -e
 set -u
 
+trap 'chmod 755 "$STARUPFIX" 2>/dev/null || true' EXIT INT TERM
+
 show_menu() {
     clear
     echo "==============================================="
