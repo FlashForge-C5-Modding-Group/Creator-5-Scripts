@@ -49,9 +49,9 @@ enable_loop() {
             TMP_FILE="${STARUPFIX}.tmp"
 
             # Insert NEW_LINE directly above MATCH_LINE
-            awk -v ins="$NEW_LINE" -v match="$MATCH_LINE" \
-                'index($0, match) && !done { print ins; done=1 } { print }' \
-                "$STARUPFIX" > "$TMP_FILE"
+            awk -v ins="$NEW_LINE" -v target="$MATCH_LINE" \
+                            'index($0, target) && !done { print ins; done=1 } { print }' \
+                            "$STARUPFIX" > "$TMP_FILE"
 
             # Preserve exact permissions from the original file before moving
             chmod --reference="$STARUPFIX" "$TMP_FILE" 2>/dev/null || chmod 755 "$TMP_FILE"
