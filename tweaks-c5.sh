@@ -131,7 +131,7 @@ enable_nan_mips() {
 
     OFFSET=""
     case "$HIGHEST_VER" in
-        2.0.1* | 2.0.5*)
+        2.0.1* | 2.0.5* | 2.0.6*)
             OFFSET="0x00a130d1"
             ;;
         *)
@@ -203,7 +203,7 @@ install_entware() {
         if [ -d "/usr/prog/PROGRAM/kernel/" ]; then
             HIGHEST_VER=$(get_highest_kernel)
             case "$HIGHEST_VER" in
-                2.0.1* | 2.0.5*) OFFSET="0x00a130d1" ;;
+                2.0.1* | 2.0.5* | 2.0.6*) OFFSET="0x00a130d1" ;;
             esac
         fi
     fi
