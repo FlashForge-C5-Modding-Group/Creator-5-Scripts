@@ -68,12 +68,3 @@ for script in "$TARGET_DIR"/*.sh; do
         ( echo "=== Executed via sh ($EXEC_TYPE) ==="; sh "$script" ) > "$log_file" 2>&1 &
     fi
 done
-
-# --------------------------------------------------------------
-# Intentionally NOT waiting for background scripts here.
-#
-# The caller (e.g. the main boot script) must continue immediately
-# after launching everything; it should not block on how long the
-# individual scripts take to finish. Each script's own log file is
-# the way to check on its progress/completion after the fact.
-# --------------------------------------------------------------
