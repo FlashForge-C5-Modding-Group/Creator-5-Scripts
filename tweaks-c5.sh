@@ -134,6 +134,9 @@ enable_nan_mips() {
         2.0.1* | 2.0.5* | 2.0.6*)
             OFFSET="0x00a130d1"
             ;;
+        2.0.7*)
+            OFFSET="0x00B330D1"
+            ;;
         *)
             echo "[-] Error: No matching offset defined for kernel version '$HIGHEST_VER'."
             echo "    Please verify your kernel package version manually."
@@ -204,6 +207,7 @@ install_entware() {
             HIGHEST_VER=$(get_highest_kernel)
             case "$HIGHEST_VER" in
                 2.0.1* | 2.0.5* | 2.0.6*) OFFSET="0x00a130d1" ;;
+                2.0.7*) OFFSET="0x00B330D1" ;;
             esac
         fi
     fi
