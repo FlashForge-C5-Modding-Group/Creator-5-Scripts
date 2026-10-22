@@ -8,6 +8,9 @@ case "$VERSION_DIR" in
     2.0.7)
         busybox devmem 0x00B330D1 8 1
         ;;
+    2.0.8)
+        busybox devmem 0x00B030D1 8 1
+        ;;
     *)
         echo "Error: Unrecognized or missing version directory ('$VERSION_DIR')" >&2
         exit 1
