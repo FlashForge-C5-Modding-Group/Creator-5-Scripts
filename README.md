@@ -1,5 +1,7 @@
-# Creator-5-Scripts
+# Creator-5-Scripts - OpenCreator Legacy 
 Scripts for C5, including important ones that loop!
+
+OpenCreator is out! Highly recommended for users who like their printer open.
 
 ## The "scripts" folder
 A folder containing scripts for loop, the safer method to fix bricking of printers by making it not possible to break the startup shell script.
