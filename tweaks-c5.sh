@@ -137,6 +137,9 @@ enable_nan_mips() {
         2.0.7*)
             OFFSET="0x00B330D1"
             ;;
+        2.0.8*)
+            OFFSET="0x00B030D1"
+            ;;
         *)
             echo "[-] Error: No matching offset defined for kernel version '$HIGHEST_VER'."
             echo "    Please verify your kernel package version manually."
